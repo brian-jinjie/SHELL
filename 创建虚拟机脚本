@@ -1,0 +1,29 @@
+#! /bin/bash
+read -p "请输入创建主机的名称" name
+#read -p "请输入创建主机的ip地址" ip
+read -p "请输入所需内存大小(1-4)" nei
+#read -p "请输入所需cpu大小"　cpu
+cd /var/lib/libvirt/images/
+ if  [ -e ${name}.img  ];then
+ echo "fail exits"
+ exit 1
+else qemu-img create -b .node_base.qcow2 -f qcow2 ${name}.img  10G
+#sed -i "/fixed-address/s#137#$ip#p" /var/lib/libvirt/images/${name}.img
+#sed -i  "15181s/yes/no/"  /var/lib/libvirt/images/${name}.img
+#sed -i  "15186s/dhcp/no/"  /var/lib/libvirt/images/${name}.img
+#sed -i "1598,1615d" /var/lib/libvirt/images/${name}.img
+fi
+cd /etc/libvirt/qemu
+if  [ -e ${name}.xml  ];then
+ echo "fail exits"
+ exit 2
+else
+ sed "s,nsd1905,$name,g" /etc/libvirt/qemu/nsd1905.xml  > /etc/libvirt/qemu/${name}.xml
+sed -i "11s/1488282/"$nei"488282/" /etc/libvirt/qemu/${name}.xml
+sed -i "12s/1488282/"$nei"488282/" /etc/libvirt/qemu/${name}.xml
+sed -i "10d"  /etc/libvirt/qemu/${name}.xml
+sed -i "44d"  /etc/libvirt/qemu/${name}.xml
+virsh define /etc/libvirt/qemu/${name}.xml
+virsh start $name
+#virsh console $name
+fi
